@@ -1,20 +1,30 @@
 const express = require('express');
-const cors = require('cors');
+const connectDB = require('./database/db');
+const configureMiddleware = require('./middlewares/middlewares');
+const routes = require('./routes/routes');
+require('dotenv').config();
 
 const app = express();
-const PORT = 3000;
 
+configureMiddleware(app);
 
-app.use(cors());
+app.use(routes);
 
-app.get('/', (req, res) => {
-    console.log("succes")
-})
+const PORT = process.env.PORT || 3000;
 
-app.get('/api/test-connection', (req, res) => {
-    res.json({ message: 'Connection successful!' });
-});
+const startServer = async () => {
+  try {
+    const conn = await connectDB();
+    if (conn) {
+      app.set('dbConnected', true);
+    }
+    
+    app.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`);
+    });
+  } catch (error) {
+    console.error(`Failed to start server: ${error.message}`);
+  }
+};
 
-app.listen(PORT, () => {
-    console.log(`Server running http://localhost:${PORT}`);
-});
+startServer();
